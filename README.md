@@ -1,3 +1,5 @@
+# PolygonCalculator
+2015 Java class project
 # Right Polygon Area Calculator Project
 This was my final project for my Java C240 course 8/08/2015.
 
@@ -12,4 +14,3 @@ The right polygon is created based on two of the following parameters:
    side length, apothem length or the circum-radius. The third parameter is automatically calculated when the other two are given.
    
    The area of the polygon is calculated and then viewed with all three parameters visualized on the drawn polygon.
-    
