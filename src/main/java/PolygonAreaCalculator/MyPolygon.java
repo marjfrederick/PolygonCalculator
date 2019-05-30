@@ -15,6 +15,11 @@
  *   The circum-radius is a line from the polygon center to a vertex. In this     *
  *      class its length is calculated.                                           *
  *                                                                                *
+ *    Modified on 5/20/19                                                         *
+ *    Modified to always use Area = 1/2*n*s*a. This means you will need to        *
+ *    calculate either the apothem or the side length before calculating          *
+ *    the area.                                                                   *
+ *                                                                                *
  *  Formulas:  s: side length,  n = number of sides,                              *
  *             a = apothem, r = circum-radius    using  trigonometry              *
  *             angle = 360 / (2 * n)  = 180 / n    (using 1/2 side length)        *
@@ -175,22 +180,32 @@ public class MyPolygon
 	    int n = getNumSides();
 	    double given = getParameterValue();
 	    String pType = getParameterType();
+	    double a = 10;  // apothem default
+	    double s = 11.547;   // sidelength default
 	    
 	   // ParameterType: user gave side length
 	   if ("S".equals(pType))
 	   {
-          area = (given * given * n) / (4 * Math.tan(Math.PI / n));
+//          area = (given * given * n) / (4 * Math.tan(Math.PI / n));
+		   s = given;
+		   a = s / (2 * Math.tan(Math.PI / n));
 	   }
 	   // ParameterType: user gave the circum-radius (polygon center to a vertex)
 	   else if ("R".equals(pType))
 	   {
-		  area = 0.5 * (given * given * n) * Math.sin(2 * Math.PI / n);
+		  s = 2 * given * Math.sin(Math.PI / n);
+		  a = given * Math.cos(Math.PI / n);
+//		  area = 0.5 * (given * given * n) * Math.sin(2 * Math.PI / n);
 	   }
 	   // ParameterType: user gave the apothem (polygon center to center of side)
 	   else if ("A".equals(pType))
 	   {
-		   area = (given * given * n) * Math.tan(Math.PI / n);
+		   a = given;
+		   s = 2 * a * Math.tan(Math.PI / n);
+//		   area = (given * given * n) * Math.tan(Math.PI / n);
 	   }
-		return area;
+	   // calculate the area: 1/2P*a,  P = Perimeter = n*s
+	   area = 0.5 * n * s * a;
+	   return area;
 	}	
 }  // end MyPolygon class

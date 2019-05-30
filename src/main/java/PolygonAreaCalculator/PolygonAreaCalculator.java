@@ -17,6 +17,15 @@
  *  polygon with a color legend and the area calculation displayed.               *
  *                                                                                *
  *  To quit the user selects the Quit button or presses the Escape key.           *
+ *                                                                                *
+ *  Modified 5/29/19                                                              *
+ *      - Removed the console greeting                                            *
+ *      - Added more info to the process   (see vBox)                             *
+ *      - Changed the size of the BPane_Height to accommodate the process info    *
+ *      - Changed the area calculation to always use Area = 1/2Pa = 1/2nsa        *
+ *        where P = Perimeter (n * s), n = number of sides, s = side length       *
+ *        and a = apothem (the perpendicular distance from the center of the      *
+ *        polygon to a side.                                                      *
  *                                                                                *                                                                            
  * ********************************************************************************/
 package PolygonAreaCalculator;
@@ -47,7 +56,7 @@ import javafx.stage.Stage;
 public class PolygonAreaCalculator extends Application
 {	
 	final int BPANE_WIDTH = 600;
-	final int BPANE_HEIGHT = 500;
+	final int BPANE_HEIGHT = 550;
 	final int LR = 25;  // border pane side margins
 	final int TB = 5;  // border pane top an bottom margins
 	
@@ -59,7 +68,7 @@ public class PolygonAreaCalculator extends Application
 	final String[] sideText = {"3","4","5","6","7","8","9","10","11","12"};
 	final Label sideLabel = new Label("Enter number of sides");
 	
-	final String[] paramText = {"S","R", "A"};
+	final String[] paramText = {"S","R", "A"}; //S=side length, R=circum-radius, A=apothem
 	final Label paramLabel = new Label("Select parameter you provide");
 	
 	// Use a fixed size to display the polygon based on the size of border pane
@@ -78,7 +87,7 @@ public class PolygonAreaCalculator extends Application
 		bPane.setPadding(new Insets(TB, LR, TB, LR)); // top-left-bottom-right
 	}
 	// constructor to create a polygon area calculator
-	public PolygonAreaCalculator(int n)
+	public PolygonAreaCalculator(int numSides)
 	{		
 		// create the border pane that contains the buttons & polygon
 		bPane = new BorderPane();
@@ -86,7 +95,7 @@ public class PolygonAreaCalculator extends Application
 		bPane.setPadding(new Insets(TB, LR, TB, LR)); // top-left-bottom-right
 		
 		// Create a pane to hold the polygon
-		pPane = createPolygonPane(n);
+		pPane = createPolygonPane(numSides);
 	}  // end constructor
 
 //------------------------------------------------------------------------------		
@@ -94,10 +103,11 @@ public class PolygonAreaCalculator extends Application
     public void start (Stage primaryStage)
     {
 		// Greet the User & Give information about the program at the console
-		greetUser();
+	//	greetUser();
 		
-		// Create a default area polygon calculator
-		new PolygonAreaCalculator ();		
+		int dSL = 6;
+		// Create a default area polygon calculator with 6 sides;
+		new PolygonAreaCalculator (dSL);		
 		
 		//Place nodes in the border pane
 		bPane.setTop(getTop());  // nodes for calculator
@@ -122,8 +132,12 @@ public class PolygonAreaCalculator extends Application
 		 });
 		
 		primaryStage.setTitle("Right Polygon Area Calculator");  // set the stage title"
-		primaryStage.setScene(scene);  // place the scene in the state
-		primaryStage.show();  // Display the stage		
+		primaryStage.setScene(scene);  // place the scene in the stage
+		
+		// Display the default polygon
+		calculateAndDisplayPolygon ();
+		primaryStage.show();  // Display the stage	
+
     }
 
 //--------------------------------------------------------------------------
@@ -134,18 +148,20 @@ public class PolygonAreaCalculator extends Application
 		System.out.println ("Welcome to the Right Polygon Area Calculator");
 		System.out.println ("This program will calculate the area of a polygon given the number of sides");
 		System.out.println ("and one other required parameter of the polygon: side length, circum-radius");
-		System.out.println("(center to vertex) or apothem (center to center of a side) that you select.");
-		System.out.println ("The results of all the parameters will be displayed on the drawn polygon.");
+		System.out.println("(center to vertex) or apothem (center to center of a side) that you select.");		
+		System.out.println ("The results of all the parameters will be displayed on a drawn polygon.");
+		System.out.println("\nFirst select the number of sides, then the parameter, such as side length,");
+		System.out.println("then enter the parameter value, then select the Calculate the Area button");
 		System.out.println ("\nYou can quit using the Quit button or the Escape (ESC) key");
 	}
 
 //--------------------------------------------------------------------------
 	// method to create the polygon pane and put the polygon into the pane
-	public Pane createPolygonPane(int n)
+	public Pane createPolygonPane(int numSides)
 	{	
 		pPane = new Pane();  // pane for the polygon
-		double [] vertexX = new double[n]; // x-values of the vertices
-		double [] vertexY = new double[n]; // y-values of the vertices
+		double [] vertexX = new double[numSides]; // x-values of the vertices
+		double [] vertexY = new double[numSides]; // y-values of the vertices
 		
 		// Create the default polygon and add it to the pane & set properties
 		Polygon polygonDraw = new Polygon();
@@ -157,11 +173,11 @@ public class PolygonAreaCalculator extends Application
 		ObservableList<Double> list = polygonDraw.getPoints();
 		   
 		//Add points to the polygon list
-		for (int i=0; i<n; i++)
+		for (int i=0; i<numSides; i++)
         {
-			vertexX[i] = centerX + radius * Math.cos(2 * i * Math.PI / n);
+			vertexX[i] = centerX + radius * Math.cos(2 * i * Math.PI / numSides);
 			list.add(vertexX[i]);
-			vertexY[i] = centerY + radius * Math.sin(2 * i * Math.PI / n);
+			vertexY[i] = centerY + radius * Math.sin(2 * i * Math.PI / numSides);
 			list.add(vertexY[i]);
 		}
 		
@@ -186,8 +202,8 @@ public class PolygonAreaCalculator extends Application
 	    // Add the apothem line
 	    double apothemValue = polygon.calculateApothem();
 	    double ratio = (apothemValue * radius) / radiusValue;
-	    double apX = centerX + ratio * Math.cos(Math.PI / n);
-	    double apY = centerY + ratio * Math.sin(Math.PI / n);
+	    double apX = centerX + ratio * Math.cos(Math.PI / numSides);
+	    double apY = centerY + ratio * Math.sin(Math.PI / numSides);
 		Line apothemLine = new Line(centerX, centerY, apX, apY);
 	    apothemLine.setStroke(Color.BLUE);
 	    pPane.getChildren().add(apothemLine);	    
@@ -197,9 +213,9 @@ public class PolygonAreaCalculator extends Application
 	    apothemValue = Math.round (apothemValue * 10.0) / 10.0; // one decimal
 	    Label apothemLabel = new Label (Double.toString(apothemValue));
 	    apothemLabel.setTextFill(Color.web("#0000ff")); // blue"
-	    apothemLabel.setTranslateX(centerX + 0.4 * ratio * Math.cos(Math.PI / n));
-	    apothemLabel.setTranslateY(centerY + 0.4 * ratio * Math.sin(Math.PI / n));
-	    apothemLabel.setRotate(180 / n); // rotate label along the apothem
+	    apothemLabel.setTranslateX(centerX + 0.4 * ratio * Math.cos(Math.PI / numSides));
+	    apothemLabel.setTranslateY(centerY + 0.4 * ratio * Math.sin(Math.PI / numSides));
+	    apothemLabel.setRotate(180 / numSides); // rotate label along the apothem
 	    pPane.getChildren().add(apothemLabel);
 	    
 	    // Add the side length label to a side. Follow the full length of the
@@ -208,9 +224,9 @@ public class PolygonAreaCalculator extends Application
 	    sValue = Math.round(sValue * 10.0) / 10.0; // one decimal
 	    Label sLabel = new Label (Double.toString(sValue));
 	    sLabel.setTextFill(Color.web("#8b4513")); // saddle-brown"
-	    sLabel.setTranslateX(centerX + ratio * Math.cos(Math.PI / n));
-	    sLabel.setTranslateY(centerY + ratio * Math.sin(Math.PI / n));
-	    sLabel.setRotate((180 / n) + 90);
+	    sLabel.setTranslateX(centerX + ratio * Math.cos(Math.PI / numSides));
+	    sLabel.setTranslateY(centerY + ratio * Math.sin(Math.PI / numSides));
+	    sLabel.setRotate((180 / numSides) + 90);
 	    pPane.getChildren().add(sLabel);
 	    
 	    // Add a color Legend to distinguish the colors
@@ -226,6 +242,7 @@ public class PolygonAreaCalculator extends Application
 	    sColorLabel.setTranslateY(40);
 	    pPane.getChildren().add(sColorLabel);
 	    
+	    
 		return pPane;
 		
 	}  // end of createPolygonPane method
@@ -240,14 +257,19 @@ public class PolygonAreaCalculator extends Application
 				+ " Polygon Area Calculator");
 		vBox.getChildren().add (wLabel);
 		vBox.getChildren().add (new Label ("This program will calculate the area"
-				+ " of a polygon given the number of sides"));
-		vBox.getChildren().add (new Label ("and one other required parameter of "
-				+ "the polygon: side length, circum-radius"));
-		vBox.getChildren().add (new Label ("(center to vertex) or apothem (center"
-				+ " to center of a side) that you select."));
-		vBox.getChildren().add (new Label ("The results of all the parameters will"
-				+ " be displayed on the drawn polygon."));
-		
+				+ " of a polygon given the number of sides and"));
+		vBox.getChildren().add (new Label ("one other required parameter of the"
+		        + " polygon: side length, circum-radius (center"));
+		vBox.getChildren().add (new Label ("to vertex) or apothem (center to center"
+				+ " of a side) that you select.  The results"));
+		vBox.getChildren().add (new Label ("of all the parameters will"
+				+ " be displayed on a drawn polygon.  First select the"));
+		vBox.getChildren().add (new Label ("number of sides, then"
+				+ " the parameter, such as side length, enter the parameter"));
+		vBox.getChildren().add (new Label ("value, then select the Calculate"
+				+ " Area button."));
+				
+
 		// space between the welcome & polygon
 		vBox.getChildren().add (new Label (" ")); 
 		
@@ -307,6 +329,7 @@ public class PolygonAreaCalculator extends Application
 		Button calcBtn = new Button ("Calculate Area"); 
 		gPane.add (calcBtn, 1, 2); // col 1, row 2
 		
+
 		// Create and register the handler for the text field		
 		tf.textProperty().addListener(new ChangeListener<String>() 
 		{
